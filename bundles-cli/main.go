@@ -11,10 +11,12 @@ func main() {
 	flag.StringVar(&yamlFile, "file", "bundle-compose.yaml", "docker-compose like file that defines a reusable bundle")
 	flag.Parse()
 
-	b, err := bundles.NewBundleFile(yamlFile)
+	bt, err := bundles.NewBundleFile(yamlFile)
 	if err != nil {
 		panic(fmt.Errorf("unable to read yamlFile: %s, error: %v", yamlFile, err))
 	}
+
+	b, err := bundles.ParseBundleFile(bt)
 
 	//fmt.Printf("parsed service tree: %v\n", b.Services)
 

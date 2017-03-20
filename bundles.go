@@ -13,7 +13,7 @@ import (
 type BundleFile struct {
 	Contents     []byte
 	Services     map[string]Service
-	BaseServices map[string]int
+	BaseServices map[string]int64
 }
 
 type Service struct {
@@ -35,7 +35,7 @@ type replacer struct {
 	value string
 }
 
-func NewBundleFile(fileName string) (*BundleFile, error) {
+func NewBundleFile(fileName string) ([]byte, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
@@ -46,12 +46,12 @@ func NewBundleFile(fileName string) (*BundleFile, error) {
 		return nil, err
 	}
 
-	return ParseBundleFile(bytes)
+	return bytes, nil
 }
 
 func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 	
-	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int{}}
+	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int64{}}
 
 	c := composer{}
 	err := yaml.Unmarshal(bytes, &c)
@@ -90,7 +90,7 @@ func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 	return &b, nil
 }
 
-func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
+func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error) {
 
 	if _, found := b.BaseServices[serviceName]; !found {
 		return nil, fmt.Errorf("unknown service: %s", serviceName)
@@ -149,13 +149,13 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 	return sb, nil
 }
 
-func buildReplacerPatterns(base, name string, service Service, count int) []replacer {
+func buildReplacerPatterns(base, name string, service Service, count int64) []replacer {
 	m := []replacer{}
 	newName := fmt.Sprintf("%s-%d", base, count+1)
 	nodesNow := []string{}
 	nodesPorts := map[int][]string{}
 
-	for i := 1; i <= count+1; i++ {
+	for i := 1; i <= int(count+1); i++ {
 		nodesNow = append(nodesNow, fmt.Sprintf("%s-%d", base, i))
 		for p := range service.Ports {
 			nodesPorts[p] = append(nodesPorts[p], fmt.Sprintf("%s-%d:%d", base, i, p))
