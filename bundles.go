@@ -181,8 +181,12 @@ func environmentFix(copy Service, replacers []replacer) {
 		if s, ok := v.Value.(string); ok {
 
 			for _, r := range replacers {
+				fmt.Printf("******s: %s r.pat: %v r.value: %s find: %s\n", s, r.pat, r.value, r.pat.Find([]byte(s)))
+
 				if string(r.pat.Find([]byte(s))) == s {
+					fmt.Printf("--------s: %s r.pat: %v r.value: %s\n", s, r.pat, r.value)
 					copy.Environment[i].Value = r.value
+					break
 				}
 			}
 
