@@ -54,7 +54,7 @@ func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int{}}
 
 	c := composer{}
-	err = yaml.Unmarshal(bytes, &c)
+	err := yaml.Unmarshal(bytes, &c)
 	if err != nil {
 		return nil, err
 	}
