@@ -102,10 +102,10 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 
 	//singleName := regexp.MustCompile(`^kafka-[0-9]+$`)
 
+	// a suitable cloner for the new service node(s)
+	clonerName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 	created := false
 	for name, service := range b.Services {
-		// look for a suitable cloner
-		clonerName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 
 		if name == clonerName && !created {
 			created = true
@@ -118,7 +118,7 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 			for i, v := range node.Environment {
 				if s, ok := v.Value.(string); ok {
 					if name == s {
-						fmt.Printf("i am here, %s", nodeName)
+						//fmt.Printf("i am here, %s", nodeName)
 						node.Environment[i].Value = nodeName
 					}
 				}
