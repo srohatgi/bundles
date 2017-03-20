@@ -8,7 +8,7 @@ import (
 
 func main() {
 	var yamlFile string
-	flag.StringVar(&yamlFile, "file", "bundle-compose.yaml", "docker-compose like file for reading")
+	flag.StringVar(&yamlFile, "file", "bundle-compose.yaml", "docker-compose like file that defines a reusable bundle")
 	flag.Parse()
 
 	b, err := bundles.NewBundleFile(yamlFile)
