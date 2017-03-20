@@ -46,7 +46,7 @@ func NewBundleFile(fileName string) (*BundleFile, error) {
 		return nil, err
 	}
 
-	return parseBundleFile(bytes)
+	return ParseBundleFile(bytes)
 }
 
 func ParseBundleFile(bytes []byte) (*BundleFile, error) {
