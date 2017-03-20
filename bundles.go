@@ -105,14 +105,14 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 	// a suitable cloner for the new service node(s)
 	clonerName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 	created := false
+	sb.BaseServices[serviceName]++
+	nodeName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
+
 	for name, service := range b.Services {
 
 		if name == clonerName && !created {
 			created = true
 			node := deepcopy.Copy(service).(Service)
-
-			sb.BaseServices[serviceName]++
-			nodeName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 
 			// check & fix for environment
 			for i, v := range node.Environment {
@@ -134,6 +134,13 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 		// check & fix for environment
 
 		// check & fix for depends_on
+		for _, d := range copy.DependsOn {
+			if d == clonerName {
+				copy.DependsOn = append(copy.DependsOn, nodeName)
+				break
+			}
+		}
+
 		c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: name, Value: copy})
 	}
 
