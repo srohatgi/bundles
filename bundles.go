@@ -2,10 +2,12 @@ package bundles
 
 import (
 	"fmt"
+	"github.com/mohae/deepcopy"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 )
 
 type BundleFile struct {
@@ -99,9 +101,28 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 	// <svc>-<digits>:<port>,...
 	// <svc>-<digits>,...
 
+	created := false
 	for name, service := range b.Services {
-		s := yaml.MapItem{Key: name, Value: service}
-		c.Version.Services = append(c.Version.Services, s)
+
+		if strings.HasPrefix(name, serviceName) && created == false {
+			node := deepcopy.Copy(service).(Service)
+
+			nodeName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
+			sb.BaseServices[serviceName]++
+			// check & fix for environment
+
+			// check & fix for depends_on
+
+			c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: nodeName, Value: node})
+		} else {
+			copy := deepcopy.Copy(service).(Service)
+
+			// check & fix for environment
+
+			// check & fix for depends_on
+			c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: name, Value: copy})
+		}
+
 	}
 
 	contents, err := yaml.Marshal(c)
