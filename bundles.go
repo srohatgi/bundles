@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 )
 
 type BundleFile struct {
@@ -101,28 +100,41 @@ func (b *BundleFile) Scale(serviceName string, count int) (*BundleFile, error) {
 	// <svc>-<digits>:<port>,...
 	// <svc>-<digits>,...
 
+	//singleName := regexp.MustCompile(`^kafka-[0-9]+$`)
+
 	created := false
 	for name, service := range b.Services {
+		// look for a suitable cloner
+		clonerName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 
-		if strings.HasPrefix(name, serviceName) && created == false {
+		if name == clonerName && !created {
+			created = true
 			node := deepcopy.Copy(service).(Service)
 
-			nodeName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
 			sb.BaseServices[serviceName]++
+			nodeName := fmt.Sprintf("%s-%d", serviceName, sb.BaseServices[serviceName])
+
 			// check & fix for environment
+			for i, v := range node.Environment {
+				if s, ok := v.Value.(string); ok {
+					if name == s {
+						fmt.Printf("i am here, %s", nodeName)
+						node.Environment[i].Value = nodeName
+					}
+				}
+			}
 
 			// check & fix for depends_on
 
 			c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: nodeName, Value: node})
-		} else {
-			copy := deepcopy.Copy(service).(Service)
-
-			// check & fix for environment
-
-			// check & fix for depends_on
-			c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: name, Value: copy})
 		}
 
+		copy := deepcopy.Copy(service).(Service)
+
+		// check & fix for environment
+
+		// check & fix for depends_on
+		c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: name, Value: copy})
 	}
 
 	contents, err := yaml.Marshal(c)
