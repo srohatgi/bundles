@@ -46,6 +46,11 @@ func NewBundleFile(fileName string) (*BundleFile, error) {
 		return nil, err
 	}
 
+	return parseBundleFile(bytes)
+}
+
+func parseBundleFile(bytes []byte) (*BundleFile, error) {
+	
 	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int{}}
 
 	c := composer{}
