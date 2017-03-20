@@ -1,0 +1,60 @@
+version:
+  services:
+    zookeeper-1:
+      image: 801351377084.dkr.ecr.us-west-1.amazonaws.com/zookeeper-exhibitor
+      environment:
+        S3_BUCKET: hello-world
+        S3_PREFIX: dummy
+      ports:
+        - 2181
+      labels:
+        avanti.service.count: "1"
+    zookeeper-2:
+      image: 801351377084.dkr.ecr.us-west-1.amazonaws.com/zookeeper-exhibitor
+      environment:
+        S3_BUCKET: hello-world
+        S3_PREFIX: dummy
+      ports:
+        - 2181
+      labels:
+        avanti.service.count: "1"
+    kafka-1:
+      image: 801351377084.dkr.ecr.us-west-1.amazonaws.com/dte-splunk-sink
+      ports:
+        - 9092
+        - 8083
+      environment:
+        KAFKA_ADVERTISED_HOST_NAME: kafka-1
+        KAFKA_ADVERTISED_PORT: 9092
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181
+      depends_on:
+        - zookeeper-1
+        - zookeeper-2
+      labels:
+        avanti.service.count: "1"
+    kafka-2:
+      image: 801351377084.dkr.ecr.us-west-1.amazonaws.com/dte-splunk-sink
+      ports:
+        - 9092
+        - 8083
+      environment:
+        KAFKA_ADVERTISED_HOST_NAME: kafka-2
+        KAFKA_ADVERTISED_PORT: 9092
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181
+      depends_on:
+        - zookeeper-1
+        - zookeeper-2
+      labels:
+        avanti.service.count: "1"
+    mq-manager:
+      image: 801351377084.dkr.ecr.us-west-1.amazonaws.com/dte-splunk-sink
+      environment:
+        KAFKA_NAME: kafka-1,kafka-2
+        ZOOKEEPER_NAME: zookeeper-1,zookeeper-2
+      ports:
+        - 8080
+      depends_on:
+        - kafka-1
+        - kafka-2
+      labels:
+        avanti.service.count: "1"
