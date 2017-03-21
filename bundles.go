@@ -145,6 +145,8 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 		c.Services = append(c.Services, yaml.MapItem{Key: name, Value: copy})
 	}
 
+	c.Version = "2"
+
 	contents, err := yaml.Marshal(c)
 	if err != nil {
 		return nil, err

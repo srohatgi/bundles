@@ -23,7 +23,7 @@ func main() {
 	fmt.Printf("key services: %v\n", b)
 
 	fmt.Printf("scaling kafka to 3\n")
-	sb, err := b.Scale("kafka", 3)
+	sb, err := b.Scale("zookeeper", 3)
 	if err != nil {
 		panic(err)
 	}
