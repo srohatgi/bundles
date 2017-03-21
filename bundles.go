@@ -136,13 +136,11 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 
 func getContainerPort(portMapping string) string {
 	portsArr := strings.Split(portMapping, ":")
-	port := ""
 	if len(portsArr) > 1 {
-		port = portsArr[1]
+		return portsArr[1]
 	} else {
-		port = portsArr[0]
+		return portsArr[0]
 	}
-	return port
 }
 
 func buildReplacerPatterns(base, name string, service Service, count int64) []replacer {
@@ -170,13 +168,7 @@ func buildReplacerPatterns(base, name string, service Service, count int64) []re
 	m = append(m, replacer{pat, strings.Join(nodesNow, ",")})
 
 	for _, p := range service.Ports {
-		portsArr := strings.Split(p, ":")
-		port := ""
-		if len(portsArr) > 1 {
-			port = portsArr[1]
-		} else {
-			port = portsArr[0]
-		}
+		port := getContainerPort(p)
 		// kafka-1:9092,kafka-2:9092
 		pat = regexp.MustCompile(fmt.Sprintf("%s-[0-9]+:(%s),?", base, port))
 		m = append(m, replacer{pat, strings.Join(nodesPorts[port], ",")})
