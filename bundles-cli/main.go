@@ -20,7 +20,7 @@ func main() {
 
 	//fmt.Printf("parsed service tree: %v\n", b.Services)
 
-	fmt.Printf("key services: %v\n", b.BaseServices)
+	fmt.Printf("key services: %v\n", b)
 
 	fmt.Printf("scaling kafka to 3\n")
 	sb, err := b.Scale("kafka", 3)

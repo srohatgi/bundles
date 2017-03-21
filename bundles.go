@@ -25,9 +25,8 @@ type Service struct {
 }
 
 type composer struct {
-	Version struct {
-		Services yaml.MapSlice
-	}
+	Version  string
+	Services yaml.MapSlice
 }
 
 type replacer struct {
@@ -54,6 +53,7 @@ func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int64{}}
 
 	c := composer{}
+	fmt.Printf("-------%v", c)
 	err := yaml.Unmarshal(bytes, &c)
 	if err != nil {
 		return nil, err
@@ -61,12 +61,18 @@ func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 
 	svcNamePattern := regexp.MustCompile(`^([a-z]+)-[0-9]+$`)
 
-	for _, v := range c.Version.Services {
+	fmt.Printf("-------%v", c)
+
+	fmt.Printf("=======%v", c.Services)
+
+	for _, v := range c.Services {
 
 		svcName, ok := v.Key.(string)
 		if !ok {
 			return nil, fmt.Errorf("unable to convert from serviceName(%v) to string", svcName)
 		}
+
+		fmt.Printf("able to convert from serviceName(%v) to string", svcName)
 
 		matches := svcNamePattern.FindSubmatch([]byte(svcName))
 		if len(matches) == 2 {
@@ -120,7 +126,7 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 			// check & fix for environment
 			environmentFix(node, replacers)
 
-			c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: nodeName, Value: node})
+			c.Services = append(c.Services, yaml.MapItem{Key: nodeName, Value: node})
 		}
 
 		copy := deepcopy.Copy(service).(Service)
@@ -136,7 +142,7 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 			}
 		}
 
-		c.Version.Services = append(c.Version.Services, yaml.MapItem{Key: name, Value: copy})
+		c.Services = append(c.Services, yaml.MapItem{Key: name, Value: copy})
 	}
 
 	contents, err := yaml.Marshal(c)
