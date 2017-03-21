@@ -143,14 +143,8 @@ func buildReplacerPatterns(base, name string, service Service, count int64) []re
 	for i := 1; i <= int(count+1); i++ {
 		nodesNow = append(nodesNow, fmt.Sprintf("%s-%d", base, i))
 		for _, p := range service.Ports {
-			portsArr := strings.Split(p, ":")
-			port := ""
-			if len(portsArr) > 1 {
-				port = portsArr[1]
-			} else {
-				port = portsArr[0]
-			}
-			nodesPorts[p] = append(nodesPorts[port], fmt.Sprintf("%s-%d:%v", base, i, port))
+			q := p[strings.LastIndex(p, ":") + 1:]
+			nodesPorts[q] = append(nodesPorts[q], fmt.Sprintf("%s-%d:%v", base, i, q))
 		}
 	}
 
@@ -165,16 +159,10 @@ func buildReplacerPatterns(base, name string, service Service, count int64) []re
 	m = append(m, replacer{pat, strings.Join(nodesNow, ",")})
 
 	for _, p := range service.Ports {
-		portsArr := strings.Split(p, ":")
-		port := ""
-		if len(portsArr) > 1 {
-			port = portsArr[1]
-		} else {
-			port = portsArr[0]
-		}
+		q := p[strings.LastIndex(p, ":") + 1:]
 		// kafka-1:9092,kafka-2:9092
-		pat = regexp.MustCompile(fmt.Sprintf("%s-[0-9]+:(%s),?", base, port))
-		m = append(m, replacer{pat, strings.Join(nodesPorts[port], ",")})
+		pat = regexp.MustCompile(fmt.Sprintf("%s-[0-9]+:(%s),?", base, q))
+		m = append(m, replacer{pat, strings.Join(nodesPorts[q], ",")})
 	}
 
 	return m
