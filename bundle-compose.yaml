@@ -52,7 +52,7 @@ services:
       KAFKA_NAME: kafka-1,kafka-2
       ZOOKEEPER_NAME: zookeeper-1,zookeeper-2
     ports:
-      - 8080
+      - 9023:8080
     depends_on:
       - kafka-1
       - kafka-2
