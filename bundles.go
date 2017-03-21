@@ -155,7 +155,7 @@ func buildReplacerPatterns(base, name string, service Service, count int64) []re
 		nodesNow = append(nodesNow, fmt.Sprintf("%s-%d", base, i))
 		for _, p := range service.Ports {
 			port := getContainerPort(p)
-			nodesPorts[p] = append(nodesPorts[port], fmt.Sprintf("%s-%d:%v", base, i, port))
+			nodesPorts[port] = append(nodesPorts[port], fmt.Sprintf("%s-%d:%v", base, i, port))
 		}
 	}
 
