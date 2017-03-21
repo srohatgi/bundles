@@ -134,6 +134,17 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 	return sb, nil
 }
 
+func getContainerPort(portMapping string) string {
+	portsArr := strings.Split(portMapping, ":")
+	port := ""
+	if len(portsArr) > 1 {
+		port = portsArr[1]
+	} else {
+		port = portsArr[0]
+	}
+	return port
+}
+
 func buildReplacerPatterns(base, name string, service Service, count int64) []replacer {
 	m := []replacer{}
 	newName := fmt.Sprintf("%s-%d", base, count+1)
@@ -143,13 +154,7 @@ func buildReplacerPatterns(base, name string, service Service, count int64) []re
 	for i := 1; i <= int(count+1); i++ {
 		nodesNow = append(nodesNow, fmt.Sprintf("%s-%d", base, i))
 		for _, p := range service.Ports {
-			portsArr := strings.Split(p, ":")
-			port := ""
-			if len(portsArr) > 1 {
-				port = portsArr[1]
-			} else {
-				port = portsArr[0]
-			}
+			port := getContainerPort(p)
 			nodesPorts[p] = append(nodesPorts[port], fmt.Sprintf("%s-%d:%v", base, i, port))
 		}
 	}
