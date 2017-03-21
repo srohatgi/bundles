@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/mohae/deepcopy"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -34,26 +32,11 @@ type replacer struct {
 	value string
 }
 
-func NewBundleFile(fileName string) ([]byte, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return nil, err
-	}
+func NewBundleFile(bytes []byte) (*BundleFile, error) {
 
-	bytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
-}
-
-func ParseBundleFile(bytes []byte) (*BundleFile, error) {
-	
 	b := BundleFile{Contents: bytes, Services: map[string]Service{}, BaseServices: map[string]int64{}}
 
 	c := composer{}
-	fmt.Printf("-------%v", c)
 	err := yaml.Unmarshal(bytes, &c)
 	if err != nil {
 		return nil, err
@@ -61,18 +44,12 @@ func ParseBundleFile(bytes []byte) (*BundleFile, error) {
 
 	svcNamePattern := regexp.MustCompile(`^([a-z]+)-[0-9]+$`)
 
-	fmt.Printf("-------%v", c)
-
-	fmt.Printf("=======%v", c.Services)
-
 	for _, v := range c.Services {
 
 		svcName, ok := v.Key.(string)
 		if !ok {
 			return nil, fmt.Errorf("unable to convert from serviceName(%v) to string", svcName)
 		}
-
-		fmt.Printf("able to convert from serviceName(%v) to string", svcName)
 
 		matches := svcNamePattern.FindSubmatch([]byte(svcName))
 		if len(matches) == 2 {
@@ -129,20 +106,20 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 			c.Services = append(c.Services, yaml.MapItem{Key: nodeName, Value: node})
 		}
 
-		copy := deepcopy.Copy(service).(Service)
+		cp := deepcopy.Copy(service).(Service)
 
 		// check & fix for environment
-		environmentFix(copy, replacers)
+		environmentFix(cp, replacers)
 
 		// check & fix for depends_on
-		for _, d := range copy.DependsOn {
+		for _, d := range cp.DependsOn {
 			if d == clonerName {
-				copy.DependsOn = append(copy.DependsOn, nodeName)
+				cp.DependsOn = append(cp.DependsOn, nodeName)
 				break
 			}
 		}
 
-		c.Services = append(c.Services, yaml.MapItem{Key: name, Value: copy})
+		c.Services = append(c.Services, yaml.MapItem{Key: name, Value: cp})
 	}
 
 	c.Version = "2"
@@ -208,10 +185,10 @@ func environmentFix(copy Service, replacers []replacer) {
 		if s, ok := v.Value.(string); ok {
 
 			for _, r := range replacers {
-				fmt.Printf("******s: %s r.pat: %v r.value: %s find: %s\n", s, r.pat, r.value, r.pat.Find([]byte(s)))
+				logger.Printf("******s: %s r.pat: %v r.value: %s find: %s\n", s, r.pat, r.value, r.pat.Find([]byte(s)))
 
 				if string(r.pat.Find([]byte(s))) == s {
-					fmt.Printf("--------s: %s r.pat: %v r.value: %s\n", s, r.pat, r.value)
+					logger.Printf("--------s: %s r.pat: %v r.value: %s\n", s, r.pat, r.value)
 					copy.Environment[i].Value = r.value
 					break
 				}
