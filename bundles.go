@@ -79,8 +79,8 @@ func (b *BundleFile) Scale(serviceName string, count int64) (*BundleFile, error)
 		return nil, fmt.Errorf("unknown service: %s", serviceName)
 	}
 
-	if b.BaseServices[serviceName] > count {
-		return nil, fmt.Errorf("desired count:%d cannot be less than:%d", count, b.BaseServices[serviceName])
+	if b.BaseServices[serviceName] >= count {
+		return nil, fmt.Errorf("desired count:%d cannot be less than equal to:%d", count, b.BaseServices[serviceName])
 	}
 
 	sb := &BundleFile{Contents: []byte{}, Services: map[string]Service{}, BaseServices: b.BaseServices}
